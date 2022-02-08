@@ -1,18 +1,15 @@
 /**
  * @jest-environment jsdom
- */
+**/
 
- import {
-  screen,
-  fireEvent,
-  getByTestId
-} from "@testing-library/dom";
+import {screen, fireEvent, getByTestId} from "@testing-library/dom";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import NewBillUI from "../views/NewBillUI.js";
 import NewBill from "../containers/NewBill.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes";
+import { event } from "jquery";
 
-describe("Given I am connected as an employee", () => {
+describe("Given I am connected as an employee and I am on NewBill Page", () => {
   describe("When I am on NewBill Page and I add an image file", () => {
     test("Then this new file should have been changed in the input file", () => {
       const onNavigate = (pathname) => {
@@ -29,18 +26,23 @@ describe("Given I am connected as an employee", () => {
       );
       document.body.innerHTML  = NewBillUI();
 
-      const newBill = new NewBill({
+      const mockStore = {
+        bills: jest.fn(() => newBill.store),
+        create: jest.fn(() => Promise.resolve({})),
+    };
+
+    const newBill = new NewBill({
         document,
         onNavigate,
-        store: null,
+        store: mockStore,
         localStorage: window.localStorage,
-      });
-      const handleChangeFile = jest.fn(newBill.handleChangeFile);
+    });
+      const handleChangeFile = jest.fn((e)=>newBill.handleChangeFile(e));
       const inputFile = screen.getByTestId("file");
       inputFile.addEventListener("change", handleChangeFile);
       fireEvent.change(inputFile, {
         target: {
-          files: [new File(["image.png"], "image.png", { type: "image/png" })],
+          files: [new File(["image.png"], "image.png", { type: "png" })],
         },
       });
       expect(handleChangeFile).toHaveBeenCalled();

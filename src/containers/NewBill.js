@@ -19,8 +19,7 @@ export default class NewBill {
     document.getElementById("format_error").classList.add("hidden")
     e.preventDefault()
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
-    const filePath = e.target.value.split(/\\/g)
-    const fileName = filePath[filePath.length-1]
+    const fileName = file.name
     const extensionCheck = /(png|jpg|jpeg)/g;
     const extension = fileName.split(".").pop();
     const matchExtension = extension.toLowerCase().match(extensionCheck);
@@ -29,24 +28,29 @@ export default class NewBill {
       const email = JSON.parse(localStorage.getItem("user")).email
       formData.append('file', file)
       formData.append('email', email)
-      this.store
-        .bills()
-        .create({
-          data: formData,
-          headers: {
-            noContentType: true
-          }
-        })
-        .then(({fileUrl, key}) => {
-          this.billId = key
-          this.fileUrl = fileUrl
-          this.fileName = matchExtension ? fileName : "invalid";
-        }).catch(error => console.error(error))
+      this.handleStore(formData, fileName)
     }else{
       this.document.querySelector(`input[data-testid="file"]`).value=null
       document.getElementById("format_error").classList.remove("hidden")
     }
   }
+  handleStore(formData, fileName) {
+    this.store
+        .bills()
+        .create({
+          data: formData,
+          headers: {
+            noContentType: true,
+          },
+        })
+        .then(({ fileUrl, key }) => {
+          this.billId = key;
+          this.fileUrl = fileUrl;
+          this.fileName = fileName;
+        })
+        .catch((error) => console.error(error));
+  }
+
   handleSubmit = e => {
     e.preventDefault()
     console.log('e.target.querySelector(`input[data-testid="datepicker"]`).value', e.target.querySelector(`input[data-testid="datepicker"]`).value)
